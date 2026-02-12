@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOREX PROFIT & LOSS CALCULATOR</title>
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ==================== TOP BAR ==================== -->
+<div class="top-bar">
+    <div class="top-bar-left">
+        <span class="usage-badge" id="usageBadge" style="display:none;cursor:pointer;" onclick="showExpirationPopup()" title="Cliquez pour details">&#9203; --</span>
+        <span class="user-badge" id="userBadge" style="display:none;"></span>
+    </div>
+    <div class="top-bar-right">
+        <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
+            <option value="fr">FR</option>
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+            <option value="ru">RU</option>
+        </select>
+    </div>
+</div>
+
+<!-- ==================== FLOATING ADMIN BUTTON ==================== -->
+<button class="param-fixed-btn" onclick="openAdminPopup()" title="Parametrage">&#9881;</button>
+
+<!-- ==================== POPUPS ==================== -->
+
+<!-- Popup Acces Administrateur -->
+<div class="popup-overlay" id="adminPopup">
+    <div class="popup-box">
+        <h3 data-i18n="admin_popup_title">Acces Administrateur</h3>
+        <input type="password" class="form-input" id="adminCodeInput" placeholder="Code secret administrateur" data-i18n-placeholder="admin_code_placeholder">
+        <div class="btn-group">
+            <button class="btn-primary" onclick="checkAdminCode()" data-i18n="btn_validate">Valider</button>
+            <button class="btn-secondary" onclick="closePopup('adminPopup')" data-i18n="btn_cancel">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- Popup detail expiration -->
+<div class="popup-overlay" id="expirationPopup">
+    <div class="popup-box">
+        <h3 style="color:var(--accent-cyan);">&#128197; Details de votre Acces</h3>
+        <div style="margin:16px 0;">
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+                <span style="color:var(--text-secondary);font-size:0.85rem;" data-i18n="exp_start_label">Debut d'acces :</span>
+                <span id="expStartDisplay" style="font-weight:600;color:var(--accent-green);font-size:0.85rem;">--</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+                <span style="color:var(--text-secondary);font-size:0.85rem;" data-i18n="exp_end_label">Fin d'acces :</span>
+                <span id="expEndDisplay" style="font-weight:600;color:var(--accent-orange);font-size:0.85rem;">--</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+                <span style="color:var(--text-secondary);font-size:0.85rem;" data-i18n="exp_remaining_label">Jours restants :</span>
+                <span id="expDaysDisplay" style="font-weight:700;font-size:1rem;">--</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;">
+                <span style="color:var(--text-secondary);font-size:0.85rem;" data-i18n="exp_status_label">Statut :</span>
+                <span id="expStatusDisplay" style="font-weight:700;font-size:0.85rem;">--</span>
+            </div>
+        </div>
+        <button class="btn-secondary full" onclick="closePopup('expirationPopup')">Fermer</button>
+    </div>
+</div>
+
+<!-- Popup renouvellement (admin) -->
+<div class="popup-overlay" id="renewPopup">
+    <div class="popup-box">
+        <h3 style="color:var(--accent-green);">&#128260; Renouveler Acces Utilisateur</h3>
+        <div class="form-group">
+            <label>Numero de telephone de l'utilisateur</label>
+            <input type="text" class="form-input" id="renewPhone" placeholder="Ex: 225 0500000000">
+        </div>
+        <div class="form-group">
+            <label>Nouvelle date de peremption</label>
+            <input type="date" class="form-input" id="renewDate">
+        </div>
+        <div class="btn-group">
+            <button class="btn-green" onclick="renewUserAccess()">Renouveler</button>
+            <button class="btn-secondary" onclick="closePopup('renewPopup')" data-i18n="btn_cancel">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- Popup acces expire bloquant -->
+<div class="popup-overlay" id="expiredBlockPopup">
+    <div class="popup-box" style="text-align:center;">
+        <div style="font-size:3rem;margin-bottom:12px;">&#128274;</div>
+        <h3 style="color:var(--accent-red);margin-bottom:12px;" data-i18n="expired_title">Acces Expire</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:20px;" data-i18n="expired_msg">Veuillez renouveler votre acces a l'application. Contactez l'administrateur pour obtenir un renouvellement.</p>
+        <button class="btn-secondary full" onclick="closePopup('expiredBlockPopup')">OK</button>
+    </div>
+</div>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<div class="main-wrapper">
+    <div class="page-header">
+        <h1>FOREX PROFIT & LOSS CALCULATOR</h1>
+        <p data-i18n="subtitle">Calculez vos gains et pertes sur le marche des changes</p>
+    </div>
+
+    <!-- ==================== PAGE 1: ACCUEIL ==================== -->
+    <div id="page1" class="page active">
+        <div class="card">
+            <div class="card-title">
+                <div class="icon-box icon-cyan">&#127968;</div>
+                <span data-i18n="home">Page d'accueil</span>
+            </div>
+            <div id="loginSection">
+                <div class="form-group">
+                    <label data-i18n="phone_label">Numero de telephone</label>
+                    <input type="text" class="form-input" id="loginPhone" placeholder="Ex: 225 0586214172" data-i18n-placeholder="login_placeholder">
+                </div>
+                <button class="btn-primary full" onclick="loginUser()">
+                    <span data-i18n="login_btn">Connexion</span>
+                </button>
+            </div>
+            <div id="menuSection" style="display:none;">
+                <div class="menu-grid" id="menuGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PAGE 2: PROFIT ET PERTE ==================== -->
+    <div id="page2" class="page">
+        <div class="card">
+            <div class="card-title">
+                <div class="icon-box icon-cyan">$</div>
+                <span data-i18n="p2_title">Profit et Perte</span>
+            </div>
+            <div class="form-group">
+                <label data-i18n="capital">Budget d'investissement (USD)</label>
+                <input type="number" class="form-input" id="capital" placeholder="Ex: 10000" step="any" min="0">
+            </div>
+            <div class="form-group">
+                <label data-i18n="pair">Paire de devises</label>
+                <select class="form-select" id="pair" onchange="updatePipInfo()">
+                    <option value="EUR/USD" data-pipval="10" data-dec="4">EUR/USD</option>
+                    <option value="GBP/USD" data-pipval="10" data-dec="4">GBP/USD</option>
+                    <option value="USD/JPY" data-pipval="6.67" data-dec="2">USD/JPY</option>
+                    <option value="USD/CHF" data-pipval="10.75" data-dec="4">USD/CHF</option>
+                    <option value="AUD/USD" data-pipval="10" data-dec="4">AUD/USD</option>
+                    <option value="NZD/USD" data-pipval="10" data-dec="4">NZD/USD</option>
+                    <option value="USD/CAD" data-pipval="7.40" data-dec="4">USD/CAD</option>
+                    <option value="EUR/GBP" data-pipval="12.70" data-dec="4">EUR/GBP</option>
+                    <option value="EUR/JPY" data-pipval="6.67" data-dec="2">EUR/JPY</option>
+                    <option value="GBP/JPY" data-pipval="6.67" data-dec="2">GBP/JPY</option>
+                    <option value="XAU/USD" data-pipval="10" data-dec="2">XAU/USD (Or)</option>
+                    <option value="XAU/EUR" data-pipval="10" data-dec="2">XAU/EUR (Or)</option>
+                    <option value="US30/USD" data-pipval="1" data-dec="0">US30/USD</option>
+                    <option value="NAS100/USD" data-pipval="1" data-dec="0">NAS100/USD</option>
+                    <option value="SPX500/USD" data-pipval="1" data-dec="0">SPX500/USD</option>
+                    <option value="BTC/USD" data-pipval="1" data-dec="2">BTC/USD</option>
+                    <option value="ETH/USD" data-pipval="1" data-dec="2">ETH/USD</option>
+                </select>
+                <div class="pip-info" id="pipInfo">1 pip = $10 par lot standard</div>
+            </div>
+            <div class="form-group"><label data-i18n="position_type">Type de position</label></div>
+            <div class="position-toggle">
+                <button class="position-btn buy active" id="btnBuy" onclick="setPosition('buy')" data-i18n="buy_label">BUY (Achat)</button>
+                <button class="position-btn sell" id="btnSell" onclick="setPosition('sell')" data-i18n="sell_label">SELL (Vente)</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-i18n="leverage">Levier (Leverage)</label>
+                    <select class="form-select" id="leverage">
+                        <option value="1">1:1</option><option value="10">1:10</option><option value="20">1:20</option>
+                        <option value="30">1:30</option><option value="50">1:50</option>
+                        <option value="100" selected>1:100</option><option value="200">1:200</option><option value="500">1:500</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lot_size">Taille du lot</label>
+                    <select class="form-select" id="lotSize">
+                        <option value="0.01">0.01 (Micro)</option><option value="0.1">0.10 (Mini)</option>
+                        <option value="0.5">0.50</option><option value="1" selected>1.00 (Standard)</option>
+                        <option value="2">2.00</option><option value="5">5.00</option><option value="10">10.00</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">%</div><span data-i18n="price_risk">Prix & Gestion du Risque</span></div>
+            <div class="form-row">
+                <div class="form-group"><label data-i18n="entry_price">Prix d'entree</label><input type="number" class="form-input" id="entryPrice" placeholder="Ex: 1.0850" step="any" min="0"></div>
+                <div class="form-group"><label data-i18n="exit_price">Prix de sortie</label><input type="number" class="form-input" id="exitPrice" placeholder="Ex: 1.0920" step="any" min="0"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label data-i18n="stop_loss">Stop Loss (optionnel)</label><input type="number" class="form-input" id="stopLoss" placeholder="Ex: 1.0800" step="any" min="0"></div>
+                <div class="form-group"><label data-i18n="take_profit">Take Profit (optionnel)</label><input type="number" class="form-input" id="takeProfit" placeholder="Ex: 1.0950" step="any" min="0"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label data-i18n="spread_label">Spread (pips)</label><input type="number" class="form-input" id="spread" placeholder="Ex: 1.5" step="any" min="0" value="1.5"></div>
+                <div class="form-group"><label data-i18n="commission_label">Commission par lot (USD)</label><input type="number" class="form-input" id="commission" placeholder="Ex: 7" step="any" min="0" value="0"></div>
+            </div>
+            <div class="form-group"><label data-i18n="swap_label">Swap / Nuit (USD, optionnel)</label><input type="number" class="form-input" id="swap" placeholder="Ex: -2.50" step="any" value="0"></div>
+            <button class="btn-primary full" onclick="calculate()" style="margin-top:6px;" data-i18n="btn_calculate">CALCULER LE PROFIT / PERTE</button>
+            <button class="btn-secondary full" onclick="resetFormP2()" style="margin-top:8px;" data-i18n="btn_reset">Reinitialiser</button>
+        </div>
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-orange">&#8593;</div><span data-i18n="budget_diff_title">Taux Differentiel du Budget</span></div>
+            <div class="form-row">
+                <div class="form-group"><label data-i18n="budget_before">Budget AVANT trading (USD)</label><input type="number" class="form-input" id="budgetBefore" placeholder="Ex: 10000" step="any" min="0"></div>
+                <div class="form-group"><label data-i18n="budget_after">Budget APRES trading (USD)</label><input type="number" class="form-input" id="budgetAfter" placeholder="Ex: 12000" step="any" min="0"></div>
+            </div>
+            <button class="btn-green" onclick="calcBudgetDiff()" data-i18n="btn_calc_diff">Calculer le Differentiel</button>
+            <div id="diffResult" style="display:none; margin-top:14px;">
+                <div class="results-grid">
+                    <div class="result-item"><div class="item-label" data-i18n="lbl_margin_loss">Marge / Perte</div><div class="item-value" id="diffAmount">$0.00</div></div>
+                    <div class="result-item"><div class="item-label" data-i18n="lbl_diff_rate">Taux Differentiel</div><div class="item-value" id="diffRate">0.00%</div></div>
+                    <div class="result-item"><div class="item-label" data-i18n="lbl_status">Statut</div><div class="item-value" id="diffStatus">--</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="results-section" id="resultsSection">
+            <div class="result-main" id="resultMain">
+                <div class="label" data-i18n="lbl_net_result">Resultat Net</div>
+                <div class="amount" id="resultAmount">$0.00</div>
+                <div class="roi" id="resultRoi">0.00% ROI</div>
+            </div>
+            <div class="results-grid">
+                <div class="result-item"><div class="item-label" data-i18n="lbl_gross_pl">Profit/Perte Brut</div><div class="item-value" id="grossPL">$0.00</div><div class="item-sub" data-i18n="lbl_before_fees">Avant frais</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_spread_cost">Cout du Spread</div><div class="item-value" id="spreadCost">$0.00</div><div class="item-sub" id="spreadPips">0 pips</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_commission_swap">Commission + Swap</div><div class="item-value" id="totalFees">$0.00</div><div class="item-sub" data-i18n="lbl_total_fees">Frais totaux</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_pips_result">Pips Gagnes/Perdus</div><div class="item-value" id="pipsResult">0</div><div class="item-sub" id="pipsNet" data-i18n="lbl_net_after_spread">Net apres spread</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_position_size">Taille de Position</div><div class="item-value" id="positionSize">$0</div><div class="item-sub" data-i18n="lbl_notional">Volume notionnel</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_margin_req">Marge Requise</div><div class="item-value" id="marginReq">$0</div><div class="item-sub" id="marginPct">0% du capital</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_risk_sl">Risque si Stop Loss</div><div class="item-value" id="riskSL">--</div><div class="item-sub" id="riskPctSL">--</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_rr_ratio">Ratio Risque/Gain</div><div class="item-value" id="rrRatio">--</div><div class="item-sub" id="rrLabel" data-i18n="lbl_risk_reward">Risk:Reward</div></div>
+            </div>
+            <div class="btn-group"><button class="btn-primary" onclick="downloadPLPDF()" data-i18n="btn_download_pl_pdf">Telecharger PDF Estimation Profit/Perte</button></div>
+        </div>
+        <div class="card">
+            <div class="card-title" style="justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;"><div class="icon-box icon-purple">H</div><span data-i18n="history_title">Historique des Calculs</span></div>
+                <button class="btn-danger" onclick="clearHistory()" style="font-size:0.78rem;padding:6px 14px;" data-i18n="btn_clear">Effacer</button>
+            </div>
+            <div class="summary-bar" id="summaryBar" style="display:none;">
+                <div class="summary-item"><div class="s-label" data-i18n="lbl_total_trades">Total Trades</div><div class="s-value" id="totalTrades" style="color:#fff;">0</div></div>
+                <div class="summary-item"><div class="s-label" data-i18n="lbl_total_pl">P&L Total</div><div class="s-value" id="totalPL" style="color:var(--accent-green);">$0</div></div>
+                <div class="summary-item"><div class="s-label" data-i18n="lbl_winners">Gagnants</div><div class="s-value" id="winCount" style="color:var(--accent-green);">0</div></div>
+                <div class="summary-item"><div class="s-label" data-i18n="lbl_losers">Perdants</div><div class="s-value" id="lossCount" style="color:var(--accent-red);">0</div></div>
+            </div>
+            <div id="historyContent"><div class="empty-state">Aucun calcul effectue.</div></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- ==================== PAGE 3: BOT LONGTERM ==================== -->
+    <div id="page3" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">B</div><span data-i18n="p3_title">Suivi Budget - Bot Longterm Trading</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL3">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate3">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading3" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(3)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(3)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(3)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(3)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions3"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- ==================== PAGE 4: BOT PIVOT ==================== -->
+    <div id="page4" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-purple">P</div><span data-i18n="p4_title">Suivi Budget - Bot Point Pivot - Return Trend</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL4">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate4">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading4" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(4)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(4)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(4)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(4)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions4"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- ==================== PAGE 5: ESTIMATION SALAIRE ==================== -->
+    <div id="page5" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-orange">S</div><span data-i18n="p5_title">Estimation Salaire</span></div>
+            <div class="form-group"><label data-i18n="salary_amount">Montant Salariale Estime (USD)</label><input type="number" class="form-input" id="salaryEst" placeholder="Ex: 1000"></div>
+            <div class="form-group"><label data-i18n="rate_perf">Taux Performance Trading (%)</label><input type="number" class="form-input" id="ratePerf" placeholder="Ex: 60"></div>
+            <button class="btn-primary full" onclick="calcSalaryEst()" data-i18n="btn_calc_salary">Calculer le Budget a Investir</button>
+            <div class="results-grid" style="margin-top:18px;">
+                <div class="result-item"><div class="item-label" data-i18n="lbl_salary_est">Salaire Estime</div><div class="item-value" id="salaryDisplay">0 USD</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_rate_perf">Taux Performance</div><div class="item-value" id="rateDisplay">0%</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_budget_invest">Budget a Investir</div><div class="item-value" id="budgetInvest" style="color:var(--accent-green);">0 USD</div></div>
+            </div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- ==================== PAGE 6: VOLUME CONTROLE ==================== -->
+    <div id="page6" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-purple">V</div><span data-i18n="p6_title">Volume Controle</span></div>
+            <div class="form-group"><label data-i18n="budget_vc">Budget de Trading</label><input type="number" class="form-input" id="budgetVC" placeholder="Ex: 10000" oninput="calcVolumeControl()"></div>
+            <div class="results-grid" style="margin-top:16px;">
+                <div class="result-item"><div class="item-label" data-i18n="lbl_bareme_lot">Bareme Debut LOT</div><div class="item-value">0.01</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_budget_bareme">Budget Bareme</div><div class="item-value">500</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_bareme_calc">Bareme Calcul LOT</div><div class="item-value" id="baremeLot" style="color:var(--accent-cyan);">0.0020</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_lot_special">LOT Special a Utiliser</div><div class="item-value" id="lotSpecial" style="color:var(--accent-green);font-size:1.5rem;">0.00</div></div>
+                <div class="result-item"><div class="item-label" data-i18n="lbl_pret_broker">Pret Broker</div><div class="item-value" id="pretBroker" style="color:var(--accent-orange);">0</div></div>
+            </div>
+            <div class="btn-group" style="margin-top:16px;"><button class="btn-primary" onclick="downloadVCPDF()" data-i18n="btn_download_vc">Telecharger PDF Volume Control</button></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- ==================== PAGE 7: INTERET COMPOSE ==================== -->
+    <div id="page7" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">IC</div><span data-i18n="p7_title">Interet Compose (5 ans)</span></div>
+            <div class="form-row">
+                <div class="form-group"><label data-i18n="budget_ic">Budget de Trading (USD)</label><input type="number" class="form-input" id="budgetIC" placeholder="Ex: 100"></div>
+                <div class="form-group"><label data-i18n="rate_ic">Taux Performance Minimum Mensuel (%)</label><input type="number" class="form-input" id="rateIC" placeholder="Ex: 60"></div>
+            </div>
+            <button class="btn-primary full" onclick="calcCompoundInterest()" data-i18n="btn_calc_ic">Calculer l'Interet Compose</button>
+            <div class="dashboard-grid" style="margin-top:16px;">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_ca">Cumul CA</div><div class="d-value" id="cumulCA">0 USD</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_profit">Cumul Profit Net</div><div class="d-value" id="cumulProfit" style="color:var(--accent-green);">0 USD</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_taux">Cumul Taux Profit</div><div class="d-value" id="cumulTaux">0%</div></div>
+            </div>
+            <div class="btn-group" style="margin-top:12px;">
+                <button class="btn-primary" onclick="downloadICPDF()" data-i18n="btn_download_ic">Telecharger PDF Interet Compose</button>
+                <button class="btn-secondary" onclick="toggleShareIC()" data-i18n="btn_share">Partager</button>
+            </div>
+            <div class="share-btns" id="shareICBtns" style="display:none;">
+                <button class="share-btn share-whatsapp" onclick="shareVia('whatsapp')">WhatsApp</button>
+                <button class="share-btn share-facebook" onclick="shareVia('facebook')">Facebook</button>
+                <button class="share-btn share-gmail" onclick="shareVia('gmail')">Gmail</button>
+                <button class="share-btn share-telegram" onclick="shareVia('telegram')">Telegram</button>
+                <button class="share-btn share-copy" onclick="shareVia('copy')">Copier</button>
+            </div>
+        </div>
+        <div id="icGraphs"></div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- ==================== PAGE 8: PANEL PARAMETRAGE ==================== -->
+    <div id="page8" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-red">A</div><span data-i18n="p8_title">Panel Parametrage - Administrateur</span></div>
+            <div class="form-row-3">
+                <div class="form-group"><label data-i18n="admin_name">Nom Utilisateur</label><input type="text" class="form-input" id="newUserName" placeholder="Nom complet"></div>
+                <div class="form-group"><label data-i18n="admin_phone">Numero Telephone</label><input type="text" class="form-input" id="newUserPhone" placeholder="Ex: 225 0500000000"></div>
+                <div class="form-group"><label data-i18n="admin_exp">Date de Peremption</label><input type="date" class="form-input" id="newUserExp"></div>
+            </div>
+            <div class="form-group">
+                <label data-i18n="admin_access">Acces aux Pages</label>
+                <div id="accessCheckboxes" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-green" onclick="addUser()" data-i18n="btn_add_user">Ajouter Utilisateur</button>
+                <button class="btn-danger" onclick="deleteUserUI()" data-i18n="btn_delete_user">Supprimer Utilisateur</button>
+                <button class="btn-primary" onclick="openRenewPopup()">&#128260; <span data-i18n="btn_renew_access">Renouveler Acces</span></button>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadUserList()" data-i18n="btn_download_users">Telecharger Listing Utilisateurs</button>
+                <button class="btn-secondary" onclick="printUserList()" data-i18n="btn_print_users">Imprimer Listing Utilisateurs</button>
+            </div>
+            <div id="userListContainer" style="margin-top:16px;"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+</div>
+
+<!-- ==================== APPLICATION SCRIPT ==================== -->
+<script src="script.js"></script>
+
+</body>
+</html>
