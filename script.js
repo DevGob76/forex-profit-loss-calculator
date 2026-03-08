@@ -1,7 +1,3 @@
-/* ============================================================
-   FOREX PROFIT & LOSS CALCULATOR - Script
-   ============================================================ */
-
 // ==================== GLOBAL STATE ====================
 let currentUser = null;
 let tradeHistory = [];
@@ -24,15 +20,31 @@ const LOT_LIST = ['0.01','0.02','0.03','0.05','0.1','0.2','0.3','0.5','1.0','2.0
 
 const PAGE_NAMES = {
     1: "Page d'accueil", 2: "Profit et Perte",
-    3: "Suivi Budget - Bot Longterm", 4: "Suivi Budget - Bot Pivot",
+    3: "Suivi Budget - Bot Longterm N\u00b01", 4: "Suivi Budget - Bot Pivot",
     5: "Estimation Salaire", 6: "Volume Controle",
-    7: "Interet Compose", 8: "Panel Parametrage"
+    7: "Interet Compose", 8: "Panel Parametrage",
+    9: "Suivi Budget - Bot Longterm N\u00b02",
+    10: "Suivi Budget - Bot Longterm N\u00b03",
+    11: "Suivi Budget - Bot Longterm N\u00b04",
+    12: "Suivi Budget - Bot Longterm N\u00b05",
+    13: "Suivi Budget - Bot Longterm N\u00b06",
+    14: "Suivi Budget - Bot Longterm N\u00b07",
+    15: "Plan Lot Trading Forex",
+    16: "Tableau de Bord"
 };
 
 const MENU_CONFIG = [
     { page:2, icon:'$', color:'icon-cyan', titleKey:'menu_pl', descKey:'menu_pl_desc', title:'Profit et Perte', desc:'Calculer gains et pertes forex' },
-    { page:3, icon:'B', color:'icon-green', titleKey:'menu_bot_long', descKey:'menu_bot_long_desc', title:'Bot Longterm Trading', desc:'Suivi budget longterm' },
+    { page:3, icon:'B1', color:'icon-green', titleKey:'menu_bot_long1', descKey:'menu_bot_long1_desc', title:'Bot Longterm Trading N\u00b01', desc:'Suivi budget longterm N\u00b01' },
+    { page:9, icon:'B2', color:'icon-green', titleKey:'menu_bot_long2', descKey:'menu_bot_long2_desc', title:'Bot Longterm Trading N\u00b02', desc:'Suivi budget longterm N\u00b02' },
+    { page:10, icon:'B3', color:'icon-green', titleKey:'menu_bot_long3', descKey:'menu_bot_long3_desc', title:'Bot Longterm Trading N\u00b03', desc:'Suivi budget longterm N\u00b03' },
+    { page:11, icon:'B4', color:'icon-green', titleKey:'menu_bot_long4', descKey:'menu_bot_long4_desc', title:'Bot Longterm Trading N\u00b04', desc:'Suivi budget longterm N\u00b04' },
+    { page:12, icon:'B5', color:'icon-green', titleKey:'menu_bot_long5', descKey:'menu_bot_long5_desc', title:'Bot Longterm Trading N\u00b05', desc:'Suivi budget longterm N\u00b05' },
+    { page:13, icon:'B6', color:'icon-green', titleKey:'menu_bot_long6', descKey:'menu_bot_long6_desc', title:'Bot Longterm Trading N\u00b06', desc:'Suivi budget longterm N\u00b06' },
+    { page:14, icon:'B7', color:'icon-green', titleKey:'menu_bot_long7', descKey:'menu_bot_long7_desc', title:'Bot Longterm Trading N\u00b07', desc:'Suivi budget longterm N\u00b07' },
     { page:4, icon:'P', color:'icon-purple', titleKey:'menu_bot_pivot', descKey:'menu_bot_pivot_desc', title:'Bot Pivot - Return Trend', desc:'Suivi budget pivot' },
+    { page:15, icon:'\ud83d\udcca', color:'icon-orange', titleKey:'menu_plan_lot', descKey:'menu_plan_lot_desc', title:'Plan Lot Trading Forex', desc:'Plan du lot selon le budget' },
+    { page:16, icon:'\ud83d\udcc8', color:'icon-cyan', titleKey:'menu_dashboard', descKey:'menu_dashboard_desc', title:'Tableau de Bord', desc:'Synthese performance globale' },
     { page:5, icon:'S', color:'icon-orange', titleKey:'menu_salary', descKey:'menu_salary_desc', title:'Estimation Salaire', desc:'Estimer revenu trading' },
     { page:6, icon:'V', color:'icon-purple', titleKey:'menu_volume', descKey:'menu_volume_desc', title:'Volume Controle', desc:'Calcul lot et volume' },
     { page:7, icon:'IC', color:'icon-green', titleKey:'menu_ic', descKey:'menu_ic_desc', title:'Interet Compose', desc:'Estimation sur 5 ans' }
@@ -73,7 +85,7 @@ function setUserData(phone, key, val) { try { const d = JSON.parse(localStorage.
 function init() {
     let users = getUsers();
     if (!users.find(u => u.phone === ADMIN_PHONE)) {
-        users.push({ name:'John Gobolo', phone:ADMIN_PHONE, access:[1,2,3,4,5,6,7,8], expiration:'2099-12-31', startDate:'2024-01-01' });
+        users.push({ name:'John Gobolo', phone:ADMIN_PHONE, access:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], expiration:'2099-12-31', startDate:'2024-01-01' });
         setUsers(users);
     }
     // Ensure all users have startDate
@@ -229,8 +241,9 @@ function showPage(num) {
     const page = document.getElementById('page' + num);
     if (page) page.classList.add('active');
     if (num === 8) { renderUserList(); renderAccessCheckboxes(); }
-    if (num === 3 || num === 4) loadSessions(num);
+    if ([3,4,9,10,11,12,13,14].includes(num)) loadSessions(num);
     if (num === 2) { renderHistory(); updatePipInfo(); }
+    if (num === 16) refreshDashboardGlobal();
 }
 function goHome() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -263,7 +276,7 @@ function renderAccessCheckboxes() {
     const div = document.getElementById('accessCheckboxes');
     if (!div) return;
     div.innerHTML = '';
-    for (let i = 2; i <= 7; i++) {
+    for (let i = 2; i <= 16; i++) { if (i === 8) continue;
         const lbl = document.createElement('label');
         lbl.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:0.82rem;color:var(--text-secondary);cursor:pointer;';
         const cb = document.createElement('input');
@@ -355,7 +368,7 @@ function printUserList() {
 
 // ==================== USER DATA ====================
 function loadAllUserData() { if (!currentUser) return; tradeHistory = getUserData(currentUser.phone, 'tradeHistory') || []; }
-function savePageData(page) { if (!currentUser) return; if (page===3||page===4) { const b = document.getElementById('budgetTrading'+page); if(b) setUserData(currentUser.phone, 'budgetTrading'+page, b.value); } }
+function savePageData(page) { if (!currentUser) return; if ([3,4,9,10,11,12,13,14].includes(page)) { const b = document.getElementById('budgetTrading'+page); if(b) setUserData(currentUser.phone, 'budgetTrading'+page, b.value); } }
 
 // ==================== PAGE 2: PROFIT & LOSS ====================
 function setPosition(pos) { position = pos; document.getElementById('btnBuy').classList.toggle('active', pos==='buy'); document.getElementById('btnSell').classList.toggle('active', pos==='sell'); }
@@ -639,7 +652,8 @@ function loadSessions(page) {
 function downloadBilanPDF(page) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l','mm','a4');
-    const title = page === 3 ? 'Bilan - Bot Longterm Trading' : 'Bilan - Bot Point Pivot Return Trend';
+    const pageTitles = {3:'Bilan - Bot Longterm Trading N1',4:'Bilan - Bot Point Pivot Return Trend',9:'Bilan - Bot Longterm Trading N2',10:'Bilan - Bot Longterm Trading N3',11:'Bilan - Bot Longterm Trading N4',12:'Bilan - Bot Longterm Trading N5',13:'Bilan - Bot Longterm Trading N6',14:'Bilan - Bot Longterm Trading N7'};
+    const title = pageTitles[page] || 'Bilan Trading';
     doc.setFontSize(18);
     doc.text(sanitize(title), 14, 18);
     doc.setFontSize(11);
@@ -850,6 +864,7 @@ function shareVia(platform) {
     } else if (platform === 'facebook') {
         window.open('https://www.facebook.com/sharer/sharer.php?quote=' + encodeURIComponent(body), '_blank');
     } else if (platform === 'gmail') {
+        // Opens Gmail compose directly
         window.open('https://mail.google.com/mail/?view=cm&fs=1&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body), '_blank');
     } else if (platform === 'telegram') {
         window.open('https://t.me/share/url?text=' + encodeURIComponent(body), '_blank');
@@ -858,14 +873,207 @@ function shareVia(platform) {
     }
 }
 
+
+// ==================== PAGE 15: PLAN LOT TRADING FOREX ====================
+function downloadPlanLotPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('PLAN LOT TRADING FOREX', 14, 18);
+    doc.setFontSize(11);
+    doc.text('Date: ' + new Date().toLocaleDateString('fr-FR'), 14, 27);
+    doc.text('Bareme Maxi Fond Broker : 100 000 USD', 14, 35);
+    const lotData = [
+        [1,'0.01','100 000','1 000','100'],[2,'0.02','100 000','2 000','200'],
+        [3,'0.03','100 000','3 000','300'],[4,'0.04','100 000','4 000','400'],
+        [5,'0.05','100 000','5 000','500'],[6,'0.06','100 000','6 000','600'],
+        [7,'0.07','100 000','7 000','700'],[8,'0.08','100 000','8 000','800'],
+        [9,'0.09','100 000','9 000','900'],[10,'0.10','100 000','10 000','1 000'],
+        [11,'0.20','100 000','20 000','2 000'],[12,'0.30','100 000','30 000','3 000'],
+        [13,'0.40','100 000','40 000','4 000'],[14,'0.50','100 000','50 000','5 000'],
+        [15,'0.60','100 000','60 000','6 000'],[16,'0.70','100 000','70 000','7 000'],
+        [17,'0.80','100 000','80 000','8 000'],[18,'0.90','100 000','90 000','9 000'],
+        [19,'1.00','100 000','100 000','10 000']
+    ];
+    doc.autoTable({
+        startY: 42,
+        head: [['N','LOT','Bareme Maxi Fond Broker','MACRO FOND A INVESTIR','MICRO FOND A INVESTIR']],
+        body: lotData,
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [255,170,0] }
+    });
+    doc.save('plan_lot_trading_forex.pdf');
+}
+
+// ==================== PAGE 16: TABLEAU DE BORD ====================
+let dbChart = null;
+
+function refreshDashboardGlobal() {
+    if (!currentUser) return;
+    const sessionPages = [3,9,10,11,12,13,14,4];
+    const pageLabels = {
+        3:'Bot Longterm N1',9:'Bot Longterm N2',10:'Bot Longterm N3',
+        11:'Bot Longterm N4',12:'Bot Longterm N5',13:'Bot Longterm N6',
+        14:'Bot Longterm N7',4:'Bot Pivot Return Trend'
+    };
+    
+    let grandTotalPL = 0, grandTotalCapital = 0, grandTotalSessions = 0;
+    let grandWins = 0, grandLosses = 0, grandTotalROI = 0, grandTotalDD = 0;
+    const details = [];
+    
+    sessionPages.forEach(pg => {
+        const data = getUserData(currentUser.phone, 'sessions' + pg) || [];
+        const budget = parseFloat(getUserData(currentUser.phone, 'budgetTrading' + pg)) || 0;
+        let totalPL = 0, totalROI = 0, wins = 0, losses = 0, totalDD = 0;
+        
+        data.forEach(d => {
+            const pl = parseFloat(d.plnet) || 0;
+            totalPL += pl;
+            totalROI += parseFloat(d.roi) || 0;
+            totalDD += parseFloat(d.dd) || 0;
+            if (pl >= 0) wins++; else losses++;
+        });
+        
+        const count = data.length;
+        grandTotalPL += totalPL;
+        grandTotalCapital += budget;
+        grandTotalSessions += count;
+        grandWins += wins;
+        grandLosses += losses;
+        grandTotalROI += totalROI;
+        grandTotalDD += totalDD;
+        
+        details.push({
+            label: pageLabels[pg] || 'Page ' + pg,
+            budget: budget,
+            sessions: count,
+            pl: totalPL,
+            avgRate: count > 0 ? (totalROI / count) : 0,
+            wins: wins,
+            losses: losses,
+            winRate: count > 0 ? ((wins / count) * 100) : 0
+        });
+    });
+    
+    const grandTotalProgression = grandTotalCapital + grandTotalPL;
+    const globalRate = grandTotalCapital > 0 ? ((grandTotalPL / grandTotalCapital) * 100) : 0;
+    const globalWinRate = grandTotalSessions > 0 ? ((grandWins / grandTotalSessions) * 100) : 0;
+    const avgDD = grandTotalSessions > 0 ? (grandTotalDD / grandTotalSessions) : 0;
+    const avgROI = grandTotalSessions > 0 ? (grandTotalROI / grandTotalSessions) : 0;
+    
+    // Update KPIs
+    const elPL = document.getElementById('dbTotalPL');
+    elPL.textContent = (grandTotalPL >= 0 ? '+' : '') + grandTotalPL.toFixed(2) + ' USD';
+    elPL.style.color = grandTotalPL >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+    
+    document.getElementById('dbTotalRate').textContent = (globalRate >= 0 ? '+' : '') + globalRate.toFixed(2) + '%';
+    document.getElementById('dbTotalRate').style.color = globalRate >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+    
+    document.getElementById('dbTotalCapital').textContent = grandTotalCapital.toLocaleString('en-US',{maximumFractionDigits:2}) + ' USD';
+    document.getElementById('dbTotalProgression').textContent = grandTotalProgression.toLocaleString('en-US',{maximumFractionDigits:2}) + ' USD';
+    document.getElementById('dbTotalProgression').style.color = grandTotalProgression >= grandTotalCapital ? 'var(--accent-green)' : 'var(--accent-red)';
+    document.getElementById('dbTotalSessions').textContent = grandTotalSessions;
+    document.getElementById('dbWinSessions').textContent = grandWins;
+    document.getElementById('dbLossSessions').textContent = grandLosses;
+    document.getElementById('dbWinRate').textContent = globalWinRate.toFixed(1) + '%';
+    document.getElementById('dbAvgDD').textContent = avgDD.toFixed(2) + '%';
+    document.getElementById('dbAvgROI').textContent = avgROI.toFixed(2) + '%';
+    
+    // Update detail table
+    const tbody = document.getElementById('dbDetailBody');
+    tbody.innerHTML = '';
+    details.forEach(d => {
+        const plColor = d.pl >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+        tbody.innerHTML += '<tr>' +
+            '<td style="color:var(--accent-cyan);font-weight:600;">' + d.label + '</td>' +
+            '<td>' + d.budget.toLocaleString('en-US',{maximumFractionDigits:2}) + '</td>' +
+            '<td>' + d.sessions + '</td>' +
+            '<td style="color:' + plColor + ';font-weight:700;">' + (d.pl >= 0 ? '+' : '') + d.pl.toFixed(2) + '</td>' +
+            '<td>' + d.avgRate.toFixed(2) + '%</td>' +
+            '<td style="color:var(--accent-green);">' + d.wins + '</td>' +
+            '<td style="color:var(--accent-red);">' + d.losses + '</td>' +
+            '<td style="color:var(--accent-orange);font-weight:600;">' + d.winRate.toFixed(1) + '%</td>' +
+            '</tr>';
+    });
+    
+    // Chart
+    if (dbChart) dbChart.destroy();
+    const ctx = document.getElementById('dbChart').getContext('2d');
+    dbChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: details.map(d => d.label),
+            datasets: [
+                {
+                    label: 'Profit/Perte',
+                    data: details.map(d => d.pl),
+                    backgroundColor: details.map(d => d.pl >= 0 ? 'rgba(0,255,136,0.3)' : 'rgba(255,68,102,0.3)'),
+                    borderColor: details.map(d => d.pl >= 0 ? '#00ff88' : '#ff4466'),
+                    borderWidth: 2,
+                    borderRadius: 6
+                },
+                {
+                    label: 'Budget',
+                    data: details.map(d => d.budget),
+                    backgroundColor: 'rgba(0,212,255,0.15)',
+                    borderColor: '#00d4ff',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color:'#8a9bb5', font:{family:'Outfit'} } } },
+            scales: {
+                y: { ticks:{color:'#5a6b85'}, grid:{color:'rgba(255,255,255,0.04)'} },
+                x: { ticks:{color:'#5a6b85', font:{size:9}}, grid:{display:false} }
+            }
+        }
+    });
+}
+
+function downloadDashboardPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l','mm','a4');
+    doc.setFontSize(18);
+    doc.text(sanitize('Tableau de Bord - Performance Globale'), 14, 18);
+    doc.setFontSize(11);
+    doc.text('Date: ' + new Date().toLocaleDateString('fr-FR'), 14, 27);
+    doc.text('Total P/L: ' + document.getElementById('dbTotalPL').textContent, 14, 35);
+    doc.text('Taux Global: ' + document.getElementById('dbTotalRate').textContent, 100, 35);
+    doc.text('Capital Engage: ' + document.getElementById('dbTotalCapital').textContent, 14, 43);
+    doc.text('Capital Progression: ' + document.getElementById('dbTotalProgression').textContent, 100, 43);
+    doc.text('Sessions: ' + document.getElementById('dbTotalSessions').textContent + ' | Gagnants: ' + document.getElementById('dbWinSessions').textContent + ' | Perdants: ' + document.getElementById('dbLossSessions').textContent, 14, 51);
+    
+    const rows = [];
+    document.querySelectorAll('#dbDetailBody tr').forEach(tr => {
+        const cells = tr.querySelectorAll('td');
+        rows.push(Array.from(cells).map(c => sanitize(c.textContent)));
+    });
+    if (rows.length > 0) {
+        doc.autoTable({
+            startY: 58,
+            head: [['Strategie','Budget','Sessions','Cumul P/L','Taux Moyen','Gagnants','Perdants','Taux Reussite']],
+            body: rows,
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [0,136,255] }
+        });
+    }
+    doc.save('tableau_de_bord.pdf');
+}
+
 // ==================== TRANSLATION ====================
 const I18N = {
     fr: {
+        // General
         subtitle:'Calculez vos gains et pertes sur le marche des changes',
         home:"Page d'accueil",
+        // Login
         phone_label:'Numero de telephone',
         login_btn:'Connexion',
         login_placeholder:'Ex: 225 0586214172',
+        // Page 2 - P&L
         p2_title:'Profit et Perte',
         capital:"Budget d'investissement (USD)",
         pair:'Paire de devises',
@@ -918,14 +1126,32 @@ const I18N = {
         sell_label:'SELL (Vente)',
         pip_info_prefix:'1 pip = $',
         pip_info_suffix:' par lot standard',
-        p3_title:'Suivi Budget - Bot Longterm Trading',
+        // Page 3
+        p3_title:'Suivi Budget - Bot Longterm Trading N\u00b01',
+        p9_title:'Suivi Budget - Bot Longterm Trading N\u00b02',
+        p10_title:'Suivi Budget - Bot Longterm Trading N\u00b03',
+        p11_title:'Suivi Budget - Bot Longterm Trading N\u00b04',
+        p12_title:'Suivi Budget - Bot Longterm Trading N\u00b05',
+        p13_title:'Suivi Budget - Bot Longterm Trading N\u00b06',
+        p14_title:'Suivi Budget - Bot Longterm Trading N\u00b07',
+        p15_title:'PLAN LOT TRADING FOREX',
+        p15_desc:'Plan du lot a choisir selon le budget minimum d\'investissement.',
+        p16_title:'Tableau de Bord - Performance Globale',
+        p16_desc:'Synthese de la performance des bilans de trading.',
+        menu_plan_lot:'Plan Lot Trading Forex',
+        menu_plan_lot_desc:'Plan du lot selon le budget',
+        menu_dashboard:'Tableau de Bord',
+        menu_dashboard_desc:'Synthese performance globale',
+        btn_download_plan_lot:'Telecharger PDF Plan Lot',
         lbl_cumul_pl:'Cumul P/L',
         lbl_cumul_rate:'Cumul Taux',
         lbl_budget_trading:'Budget Trading',
         btn_download_bilan:'Telecharger PDF Bilan',
         btn_delete_all:'Supprimer Toutes les Lignes',
         btn_add_row:'+ Ajouter Ligne',
+        // Page 4
         p4_title:'Suivi Budget - Bot Point Pivot - Return Trend',
+        // Session columns
         col_datetime:'Date/Heure',
         col_before_b1:'Avant Broker 1',
         col_before_b2:'Avant Broker 2',
@@ -940,6 +1166,7 @@ const I18N = {
         col_dd:'Drawdown %',
         btn_delete_row:'Suppr.',
         btn_pdf_row:'PDF',
+        // Page 5
         p5_title:'Estimation Salaire',
         salary_amount:'Montant Salariale Estime (USD)',
         rate_perf:'Taux Performance Trading (%)',
@@ -947,6 +1174,7 @@ const I18N = {
         lbl_salary_est:'Salaire Estime',
         lbl_rate_perf:'Taux Performance',
         lbl_budget_invest:'Budget a Investir',
+        // Page 6
         p6_title:'Volume Controle',
         budget_vc:'Budget de Trading',
         lbl_bareme_lot:'Bareme Debut LOT',
@@ -955,6 +1183,7 @@ const I18N = {
         lbl_lot_special:'LOT Special a Utiliser',
         lbl_pret_broker:'Pret Broker',
         btn_download_vc:'Telecharger PDF Volume Control',
+        // Page 7
         p7_title:'Interet Compose (5 ans)',
         budget_ic:'Budget de Trading (USD)',
         rate_ic:'Taux Performance Minimum Mensuel (%)',
@@ -964,6 +1193,7 @@ const I18N = {
         lbl_cumul_taux:'Cumul Taux Profit',
         btn_download_ic:'Telecharger PDF Interet Compose',
         btn_share:'Partager',
+        // Page 8 - Admin
         p8_title:'Panel Parametrage - Administrateur',
         admin_name:'Nom Utilisateur',
         admin_phone:'Numero Telephone',
@@ -974,16 +1204,30 @@ const I18N = {
         btn_renew_access:'Renouveler Acces',
         btn_download_users:'Telecharger Listing Utilisateurs',
         btn_print_users:'Imprimer Listing Utilisateurs',
+        // Expiration
         exp_start_label:"Debut d'acces :",
         exp_end_label:"Fin d'acces :",
         exp_remaining_label:'Jours restants :',
         exp_status_label:'Statut :',
         expired_title:'Acces Expire',
         expired_msg:"Veuillez renouveler votre acces a l'application. Contactez l'administrateur pour obtenir un renouvellement.",
+        // Menu items
         menu_pl:'Profit et Perte',
         menu_pl_desc:'Calculer gains et pertes forex',
-        menu_bot_long:'Bot Longterm Trading',
-        menu_bot_long_desc:'Suivi budget longterm',
+        menu_bot_long1:'Bot Longterm Trading N\u00b01',
+        menu_bot_long1_desc:'Suivi budget longterm N\u00b01',
+        menu_bot_long2:'Bot Longterm Trading N\u00b02',
+        menu_bot_long2_desc:'Suivi budget longterm N\u00b02',
+        menu_bot_long3:'Bot Longterm Trading N\u00b03',
+        menu_bot_long3_desc:'Suivi budget longterm N\u00b03',
+        menu_bot_long4:'Bot Longterm Trading N\u00b04',
+        menu_bot_long4_desc:'Suivi budget longterm N\u00b04',
+        menu_bot_long5:'Bot Longterm Trading N\u00b05',
+        menu_bot_long5_desc:'Suivi budget longterm N\u00b05',
+        menu_bot_long6:'Bot Longterm Trading N\u00b06',
+        menu_bot_long6_desc:'Suivi budget longterm N\u00b06',
+        menu_bot_long7:'Bot Longterm Trading N\u00b07',
+        menu_bot_long7_desc:'Suivi budget longterm N\u00b07',
         menu_bot_pivot:'Bot Pivot - Return Trend',
         menu_bot_pivot_desc:'Suivi budget pivot',
         menu_salary:'Estimation Salaire',
@@ -992,6 +1236,7 @@ const I18N = {
         menu_volume_desc:'Calcul lot et volume',
         menu_ic:'Interet Compose',
         menu_ic_desc:'Estimation sur 5 ans',
+        // Admin popup
         admin_popup_title:'Acces Administrateur',
         admin_code_placeholder:'Code secret administrateur',
         btn_validate:'Valider',
@@ -1055,7 +1300,22 @@ const I18N = {
         sell_label:'SELL',
         pip_info_prefix:'1 pip = $',
         pip_info_suffix:' per standard lot',
-        p3_title:'Budget Tracking - Longterm Bot Trading',
+        p3_title:'Budget Tracking - Longterm Bot Trading N\u00b01',
+        p9_title:'Budget Tracking - Longterm Bot Trading N\u00b02',
+        p10_title:'Budget Tracking - Longterm Bot Trading N\u00b03',
+        p11_title:'Budget Tracking - Longterm Bot Trading N\u00b04',
+        p12_title:'Budget Tracking - Longterm Bot Trading N\u00b05',
+        p13_title:'Budget Tracking - Longterm Bot Trading N\u00b06',
+        p14_title:'Budget Tracking - Longterm Bot Trading N\u00b07',
+        p15_title:'FOREX LOT TRADING PLAN',
+        p15_desc:'Lot plan to choose based on minimum investment budget.',
+        p16_title:'Dashboard - Global Performance',
+        p16_desc:'Performance summary of all trading tracking pages.',
+        menu_plan_lot:'Lot Trading Plan',
+        menu_plan_lot_desc:'Lot plan by budget',
+        menu_dashboard:'Dashboard',
+        menu_dashboard_desc:'Global performance summary',
+        btn_download_plan_lot:'Download Lot Plan PDF',
         lbl_cumul_pl:'Cumul P/L',
         lbl_cumul_rate:'Cumul Rate',
         lbl_budget_trading:'Trading Budget',
@@ -1066,11 +1326,11 @@ const I18N = {
         col_datetime:'Date/Time',
         col_before_b1:'Before Broker 1',
         col_before_b2:'Before Broker 2',
-        col_cumul_before:'Total N1 (Before)',
+        col_cumul_before:'Cumul N1 (Before)',
         col_after_b1:'After Broker 1',
         col_after_b2:'After Broker 2',
-        col_cumul_after:'Total N2 (After)',
-        col_pl_net:'Net P/L',
+        col_cumul_after:'Cumul N2 (After)',
+        col_pl_net:'Net Profit/Loss',
         col_pair:'Pair',
         col_lot:'Lot',
         col_roi:'Rate / ROI %',
@@ -1088,21 +1348,21 @@ const I18N = {
         budget_vc:'Trading Budget',
         lbl_bareme_lot:'Starting LOT Scale',
         lbl_budget_bareme:'Scale Budget',
-        lbl_bareme_calc:'Calculated LOT Scale',
+        lbl_bareme_calc:'LOT Calculation Scale',
         lbl_lot_special:'Special LOT to Use',
         lbl_pret_broker:'Broker Loan',
         btn_download_vc:'Download Volume Control PDF',
         p7_title:'Compound Interest (5 years)',
         budget_ic:'Trading Budget (USD)',
-        rate_ic:'Min. Monthly Performance Rate (%)',
+        rate_ic:'Minimum Monthly Performance Rate (%)',
         btn_calc_ic:'Calculate Compound Interest',
         lbl_cumul_ca:'Cumul Revenue',
         lbl_cumul_profit:'Cumul Net Profit',
         lbl_cumul_taux:'Cumul Profit Rate',
         btn_download_ic:'Download Compound Interest PDF',
         btn_share:'Share',
-        p8_title:'Settings Panel - Administrator',
-        admin_name:'Username',
+        p8_title:'Admin Settings Panel',
+        admin_name:'User Name',
         admin_phone:'Phone Number',
         admin_exp:'Expiration Date',
         admin_access:'Page Access',
@@ -1116,11 +1376,23 @@ const I18N = {
         exp_remaining_label:'Days remaining:',
         exp_status_label:'Status:',
         expired_title:'Access Expired',
-        expired_msg:'Please renew your access to the application. Contact the administrator for renewal.',
+        expired_msg:'Please renew your access to the application. Contact the administrator for a renewal.',
         menu_pl:'Profit and Loss',
         menu_pl_desc:'Calculate forex gains and losses',
-        menu_bot_long:'Longterm Bot',
-        menu_bot_long_desc:'Budget tracking',
+        menu_bot_long1:'Longterm Bot Trading N\u00b01',
+        menu_bot_long1_desc:'Longterm budget tracking N\u00b01',
+        menu_bot_long2:'Longterm Bot Trading N\u00b02',
+        menu_bot_long2_desc:'Longterm budget tracking N\u00b02',
+        menu_bot_long3:'Longterm Bot Trading N\u00b03',
+        menu_bot_long3_desc:'Longterm budget tracking N\u00b03',
+        menu_bot_long4:'Longterm Bot Trading N\u00b04',
+        menu_bot_long4_desc:'Longterm budget tracking N\u00b04',
+        menu_bot_long5:'Longterm Bot Trading N\u00b05',
+        menu_bot_long5_desc:'Longterm budget tracking N\u00b05',
+        menu_bot_long6:'Longterm Bot Trading N\u00b06',
+        menu_bot_long6_desc:'Longterm budget tracking N\u00b06',
+        menu_bot_long7:'Longterm Bot Trading N\u00b07',
+        menu_bot_long7_desc:'Longterm budget tracking N\u00b07',
         menu_bot_pivot:'Pivot Bot - Return Trend',
         menu_bot_pivot_desc:'Pivot budget tracking',
         menu_salary:'Salary Estimation',
@@ -1130,23 +1402,23 @@ const I18N = {
         menu_ic:'Compound Interest',
         menu_ic_desc:'5-year estimation',
         admin_popup_title:'Administrator Access',
-        admin_code_placeholder:'Administrator secret code',
+        admin_code_placeholder:'Secret administrator code',
         btn_validate:'Validate',
         btn_cancel:'Cancel'
     },
     es: {
-        subtitle:'Calcule sus ganancias y perdidas en el mercado forex',
-        home:'Pagina de inicio',
+        subtitle:'Calcule tus ganancias y perdidas en el mercado forex',
+        home:'Pagina de Inicio',
         phone_label:'Numero de telefono',
-        login_btn:'Iniciar sesion',
+        login_btn:'Conexion',
         login_placeholder:'Ej: 225 0586214172',
-        p2_title:'Ganancias y Perdidas',
+        p2_title:'Ganancia y Perdida',
         capital:'Presupuesto de inversion (USD)',
         pair:'Par de divisas',
         position_type:'Tipo de posicion',
         leverage:'Apalancamiento',
         lot_size:'Tamano del lote',
-        price_risk:'Precio y Gestion de Riesgo',
+        price_risk:'Precio y Gestion del Riesgo',
         entry_price:'Precio de entrada',
         exit_price:'Precio de salida',
         stop_loss:'Stop Loss (opcional)',
@@ -1176,16 +1448,16 @@ const I18N = {
         lbl_notional:'Volumen nocional',
         lbl_margin_req:'Margen Requerido',
         lbl_of_capital:'del capital',
-        lbl_risk_sl:'Riesgo en Stop Loss',
-        lbl_rr_ratio:'Ratio Riesgo/Beneficio',
-        lbl_risk_reward:'Riesgo:Beneficio',
+        lbl_risk_sl:'Riesgo si Stop Loss',
+        lbl_rr_ratio:'Ratio Riesgo/Ganancia',
+        lbl_risk_reward:'Riesgo:Ganancia',
         btn_download_pl_pdf:'Descargar PDF Estimacion G/P',
         history_title:'Historial de Calculos',
         btn_clear:'Borrar',
         lbl_total_trades:'Total Operaciones',
         lbl_total_pl:'G/P Total',
-        lbl_winners:'Ganadoras',
-        lbl_losers:'Perdedoras',
+        lbl_winners:'Ganadores',
+        lbl_losers:'Perdedores',
         empty_history:'Ningun calculo realizado.',
         btn_back:'VOLVER',
         buy_label:'COMPRA',
@@ -1194,7 +1466,7 @@ const I18N = {
         pip_info_suffix:' por lote estandar',
         p3_title:'Seguimiento - Bot Longterm Trading',
         lbl_cumul_pl:'Acumulado G/P',
-        lbl_cumul_rate:'Tasa Acumulada',
+        lbl_cumul_rate:'Acumulado Tasa',
         lbl_budget_trading:'Presupuesto Trading',
         btn_download_bilan:'Descargar PDF Informe',
         btn_delete_all:'Eliminar Todas las Filas',
@@ -1203,21 +1475,21 @@ const I18N = {
         col_datetime:'Fecha/Hora',
         col_before_b1:'Antes Broker 1',
         col_before_b2:'Antes Broker 2',
-        col_cumul_before:'Total N1 (Antes)',
+        col_cumul_before:'Acumulado N1 (Antes)',
         col_after_b1:'Despues Broker 1',
         col_after_b2:'Despues Broker 2',
-        col_cumul_after:'Total N2 (Despues)',
-        col_pl_net:'G/P Neta',
+        col_cumul_after:'Acumulado N2 (Despues)',
+        col_pl_net:'Ganancia/Perdida Neta',
         col_pair:'Par',
         col_lot:'Lote',
         col_roi:'Tasa / ROI %',
         col_dd:'Drawdown %',
         btn_delete_row:'Elim.',
         btn_pdf_row:'PDF',
-        p5_title:'Estimacion Salarial',
-        salary_amount:'Salario Estimado (USD)',
+        p5_title:'Estimacion de Salario',
+        salary_amount:'Monto Salarial Estimado (USD)',
         rate_perf:'Tasa de Rendimiento Trading (%)',
-        btn_calc_salary:'Calcular Presupuesto de Inversion',
+        btn_calc_salary:'Calcular Presupuesto a Invertir',
         lbl_salary_est:'Salario Estimado',
         lbl_rate_perf:'Tasa de Rendimiento',
         lbl_budget_invest:'Presupuesto a Invertir',
@@ -1230,18 +1502,18 @@ const I18N = {
         lbl_pret_broker:'Prestamo Broker',
         btn_download_vc:'Descargar PDF Control Volumen',
         p7_title:'Interes Compuesto (5 anos)',
-        budget_ic:'Presupuesto Trading (USD)',
-        rate_ic:'Tasa Rendimiento Min. Mensual (%)',
+        budget_ic:'Presupuesto de Trading (USD)',
+        rate_ic:'Tasa Rendimiento Minimo Mensual (%)',
         btn_calc_ic:'Calcular Interes Compuesto',
-        lbl_cumul_ca:'Ingresos Acumulados',
-        lbl_cumul_profit:'Beneficio Neto Acumulado',
-        lbl_cumul_taux:'Tasa Beneficio Acumulada',
+        lbl_cumul_ca:'Acumulado Ingresos',
+        lbl_cumul_profit:'Acumulado Ganancia Neta',
+        lbl_cumul_taux:'Acumulado Tasa Ganancia',
         btn_download_ic:'Descargar PDF Interes Compuesto',
         btn_share:'Compartir',
         p8_title:'Panel de Configuracion - Administrador',
         admin_name:'Nombre de Usuario',
         admin_phone:'Numero de Telefono',
-        admin_exp:'Fecha de Expiracion',
+        admin_exp:'Fecha de Vencimiento',
         admin_access:'Acceso a Paginas',
         btn_add_user:'Agregar Usuario',
         btn_delete_user:'Eliminar Usuario',
@@ -1252,22 +1524,21 @@ const I18N = {
         exp_end_label:'Fin de acceso:',
         exp_remaining_label:'Dias restantes:',
         exp_status_label:'Estado:',
-        expired_title:'Acceso Expirado',
-        expired_msg:'Por favor renueve su acceso a la aplicacion. Contacte al administrador para la renovacion.',
-        menu_pl:'Ganancias y Perdidas',
+        expired_title:'Acceso Vencido',
+        expired_msg:'Por favor renueve su acceso a la aplicacion. Contacte al administrador para una renovacion.',
+        menu_pl:'Ganancia y Perdida',
         menu_pl_desc:'Calcular ganancias y perdidas forex',
-        menu_bot_long:'Bot Largo Plazo',
-        menu_bot_long_desc:'Seguimiento presupuesto',
+        
         menu_bot_pivot:'Bot Pivot - Return Trend',
         menu_bot_pivot_desc:'Seguimiento presupuesto pivot',
-        menu_salary:'Estimacion Salarial',
-        menu_salary_desc:'Estimar ingresos de trading',
+        menu_salary:'Estimacion de Salario',
+        menu_salary_desc:'Estimar ingresos trading',
         menu_volume:'Control de Volumen',
         menu_volume_desc:'Calculo de lote y volumen',
         menu_ic:'Interes Compuesto',
         menu_ic_desc:'Estimacion a 5 anos',
         admin_popup_title:'Acceso Administrador',
-        admin_code_placeholder:'Codigo secreto de administrador',
+        admin_code_placeholder:'Codigo secreto administrador',
         btn_validate:'Validar',
         btn_cancel:'Cancelar'
     },
@@ -1329,7 +1600,22 @@ const I18N = {
         sell_label:'ПРОДАЖА',
         pip_info_prefix:'1 пипс = $',
         pip_info_suffix:' за стандартный лот',
-        p3_title:'Отслеживание - Долгосрочный бот',
+        p3_title:'\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435 - Bot Longterm N\u00b01',
+        p9_title:'\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435 - Bot Longterm N\u00b02',
+        p10_title:'\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435 - Bot Longterm N\u00b03',
+        p11_title:'\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435 - Bot Longterm N\u00b04',
+        p12_title:'\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435 - Bot Longterm N\u00b05',
+        p13_title:'\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435 - Bot Longterm N\u00b06',
+        p14_title:'\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435 - Bot Longterm N\u00b07',
+        p15_title:'PLAN LOT TRADING FOREX',
+        p15_desc:'Plan du lot a choisir selon le budget minimum.',
+        p16_title:'Dashboard',
+        p16_desc:'Performance summary.',
+        menu_plan_lot:'Plan Lot Trading',
+        menu_plan_lot_desc:'Plan lot',
+        menu_dashboard:'Dashboard',
+        menu_dashboard_desc:'Performance',
+        btn_download_plan_lot:'PDF Plan Lot',
         lbl_cumul_pl:'Общая П/У',
         lbl_cumul_rate:'Общая ставка',
         lbl_budget_trading:'Торговый бюджет',
@@ -1393,8 +1679,21 @@ const I18N = {
         expired_msg:'Пожалуйста, обновите доступ к приложению. Свяжитесь с администратором для продления.',
         menu_pl:'Прибыль и Убытки',
         menu_pl_desc:'Расчет прибыли и убытков форекс',
-        menu_bot_long:'Долгосрочный бот',
-        menu_bot_long_desc:'Отслеживание бюджета',
+        menu_bot_long1:'Bot Longterm N\u00b01',
+        menu_bot_long1_desc:'N\u00b01',
+        menu_bot_long2:'Bot Longterm N\u00b02',
+        menu_bot_long2_desc:'N\u00b02',
+        menu_bot_long3:'Bot Longterm N\u00b03',
+        menu_bot_long3_desc:'N\u00b03',
+        menu_bot_long4:'Bot Longterm N\u00b04',
+        menu_bot_long4_desc:'N\u00b04',
+        menu_bot_long5:'Bot Longterm N\u00b05',
+        menu_bot_long5_desc:'N\u00b05',
+        menu_bot_long6:'Bot Longterm N\u00b06',
+        menu_bot_long6_desc:'N\u00b06',
+        menu_bot_long7:'Bot Longterm N\u00b07',
+        menu_bot_long7_desc:'N\u00b07',
+        
         menu_bot_pivot:'Pivot бот - Return Trend',
         menu_bot_pivot_desc:'Отслеживание pivot бюджета',
         menu_salary:'Оценка зарплаты',
@@ -1435,7 +1734,7 @@ function changeLanguage(lang) {
     updatePipInfo();
 
     // Re-render session column labels for pages 3 and 4
-    [3, 4].forEach(page => {
+    [3, 4, 9, 10, 11, 12, 13, 14].forEach(page => {
         const container = document.getElementById('sessions' + page);
         if (container) {
             container.querySelectorAll('.session-block').forEach(block => {
