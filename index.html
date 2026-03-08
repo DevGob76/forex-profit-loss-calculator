@@ -4,20 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FOREX PROFIT & LOSS CALCULATOR</title>
-    <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Application Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- ==================== TOP BAR ==================== -->
 <div class="top-bar">
     <div class="top-bar-left">
-        <span class="usage-badge" id="usageBadge" style="display:none;cursor:pointer;" onclick="showExpirationPopup()" title="Cliquez pour details">&#9203; --</span>
+        <span class="usage-badge" id="usageBadge" style="display:none;cursor:pointer;" onclick="showExpirationPopup()" title="Cliquez pour details">⏳ --</span>
         <span class="user-badge" id="userBadge" style="display:none;"></span>
     </div>
     <div class="top-bar-right">
@@ -30,19 +27,15 @@
     </div>
 </div>
 
-<!-- ==================== FLOATING ADMIN BUTTON ==================== -->
 <button class="param-fixed-btn" onclick="openAdminPopup()" title="Parametrage">&#9881;</button>
 
-<!-- ==================== POPUPS ==================== -->
-
-<!-- Popup Acces Administrateur -->
 <div class="popup-overlay" id="adminPopup">
     <div class="popup-box">
-        <h3 data-i18n="admin_popup_title">Acces Administrateur</h3>
-        <input type="password" class="form-input" id="adminCodeInput" placeholder="Code secret administrateur" data-i18n-placeholder="admin_code_placeholder">
+        <h3>Acces Administrateur</h3>
+        <input type="password" class="form-input" id="adminCodeInput" placeholder="Code secret administrateur">
         <div class="btn-group">
-            <button class="btn-primary" onclick="checkAdminCode()" data-i18n="btn_validate">Valider</button>
-            <button class="btn-secondary" onclick="closePopup('adminPopup')" data-i18n="btn_cancel">Annuler</button>
+            <button class="btn-primary" onclick="checkAdminCode()">Valider</button>
+            <button class="btn-secondary" onclick="closePopup('adminPopup')">Annuler</button>
         </div>
     </div>
 </div>
@@ -87,7 +80,7 @@
         </div>
         <div class="btn-group">
             <button class="btn-green" onclick="renewUserAccess()">Renouveler</button>
-            <button class="btn-secondary" onclick="closePopup('renewPopup')" data-i18n="btn_cancel">Annuler</button>
+            <button class="btn-secondary" onclick="closePopup('renewPopup')">Annuler</button>
         </div>
     </div>
 </div>
@@ -102,14 +95,13 @@
     </div>
 </div>
 
-<!-- ==================== MAIN CONTENT ==================== -->
 <div class="main-wrapper">
     <div class="page-header">
         <h1>FOREX PROFIT & LOSS CALCULATOR</h1>
         <p data-i18n="subtitle">Calculez vos gains et pertes sur le marche des changes</p>
     </div>
 
-    <!-- ==================== PAGE 1: ACCUEIL ==================== -->
+    <!-- PAGE 1: ACCUEIL -->
     <div id="page1" class="page active">
         <div class="card">
             <div class="card-title">
@@ -131,7 +123,7 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE 2: PROFIT ET PERTE ==================== -->
+    <!-- PAGE 2: PROFIT ET PERTE -->
     <div id="page2" class="page">
         <div class="card">
             <div class="card-title">
@@ -256,14 +248,15 @@
         <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
     </div>
 
-    <!-- ==================== PAGE 3: BOT LONGTERM ==================== -->
+    <!-- PAGE 3: BOT LONGTERM -->
     <div id="page3" class="page">
         <div class="card">
-            <div class="card-title"><div class="icon-box icon-green">B</div><span data-i18n="p3_title">Suivi Budget - Bot Longterm Trading</span></div>
+            <div class="card-title"><div class="icon-box icon-green">B</div><span data-i18n="p3_title">Suivi Budget - Bot Longterm Trading N&deg;1</span></div>
             <div class="dashboard-grid">
                 <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL3">0.00</div></div>
                 <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate3">0%</div></div>
                 <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading3" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(3)"></div>
+
             </div>
             <div class="btn-group">
                 <button class="btn-primary" onclick="downloadBilanPDF(3)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
@@ -275,7 +268,7 @@
         <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
     </div>
 
-    <!-- ==================== PAGE 4: BOT PIVOT ==================== -->
+    <!-- PAGE 4: BOT PIVOT -->
     <div id="page4" class="page">
         <div class="card">
             <div class="card-title"><div class="icon-box icon-purple">P</div><span data-i18n="p4_title">Suivi Budget - Bot Point Pivot - Return Trend</span></div>
@@ -283,6 +276,7 @@
                 <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL4">0.00</div></div>
                 <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate4">0%</div></div>
                 <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading4" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(4)"></div>
+
             </div>
             <div class="btn-group">
                 <button class="btn-primary" onclick="downloadBilanPDF(4)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
@@ -294,7 +288,7 @@
         <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
     </div>
 
-    <!-- ==================== PAGE 5: ESTIMATION SALAIRE ==================== -->
+    <!-- PAGE 5: ESTIMATION SALAIRE -->
     <div id="page5" class="page">
         <div class="card">
             <div class="card-title"><div class="icon-box icon-orange">S</div><span data-i18n="p5_title">Estimation Salaire</span></div>
@@ -310,7 +304,7 @@
         <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
     </div>
 
-    <!-- ==================== PAGE 6: VOLUME CONTROLE ==================== -->
+    <!-- PAGE 6: VOLUME CONTROLE -->
     <div id="page6" class="page">
         <div class="card">
             <div class="card-title"><div class="icon-box icon-purple">V</div><span data-i18n="p6_title">Volume Controle</span></div>
@@ -327,7 +321,7 @@
         <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
     </div>
 
-    <!-- ==================== PAGE 7: INTERET COMPOSE ==================== -->
+    <!-- PAGE 7: INTERET COMPOSE -->
     <div id="page7" class="page">
         <div class="card">
             <div class="card-title"><div class="icon-box icon-green">IC</div><span data-i18n="p7_title">Interet Compose (5 ans)</span></div>
@@ -357,7 +351,222 @@
         <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
     </div>
 
-    <!-- ==================== PAGE 8: PANEL PARAMETRAGE ==================== -->
+
+    <!-- PAGE 9: BOT LONGTERM N°2 -->
+    <div id="page9" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">B2</div><span data-i18n="p9_title">Suivi Budget - Bot Longterm Trading N&deg;2</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL9">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate9">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading9" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(9)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(9)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(9)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(9)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions9"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 10: BOT LONGTERM N°3 -->
+    <div id="page10" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">B3</div><span data-i18n="p10_title">Suivi Budget - Bot Longterm Trading N&deg;3</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL10">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate10">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading10" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(10)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(10)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(10)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(10)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions10"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 11: BOT LONGTERM N°4 -->
+    <div id="page11" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">B4</div><span data-i18n="p11_title">Suivi Budget - Bot Longterm Trading N&deg;4</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL11">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate11">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading11" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(11)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(11)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(11)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(11)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions11"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 12: BOT LONGTERM N°5 -->
+    <div id="page12" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">B5</div><span data-i18n="p12_title">Suivi Budget - Bot Longterm Trading N&deg;5</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL12">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate12">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading12" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(12)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(12)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(12)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(12)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions12"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 13: BOT LONGTERM N°6 -->
+    <div id="page13" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">B6</div><span data-i18n="p13_title">Suivi Budget - Bot Longterm Trading N&deg;6</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL13">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate13">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading13" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(13)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(13)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(13)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(13)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions13"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 14: BOT LONGTERM N°7 -->
+    <div id="page14" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-green">B7</div><span data-i18n="p14_title">Suivi Budget - Bot Longterm Trading N&deg;7</span></div>
+            <div class="dashboard-grid">
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_pl">Cumul P/L</div><div class="d-value" id="cumulPL14">0.00</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_cumul_rate">Cumul Taux</div><div class="d-value" id="cumulRate14">0%</div></div>
+                <div class="dash-item"><div class="d-label" data-i18n="lbl_budget_trading">Budget Trading</div><input type="number" class="form-input" id="budgetTrading14" placeholder="Budget" style="margin-top:4px;font-size:0.82rem;padding:6px 8px;" oninput="savePageData(14)"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="downloadBilanPDF(14)" data-i18n="btn_download_bilan">Telecharger PDF Bilan</button>
+                <button class="btn-danger" onclick="deleteAllRows(14)" data-i18n="btn_delete_all">Supprimer Toutes les Lignes</button>
+                <button class="btn-green" onclick="addRow(14)" data-i18n="btn_add_row">+ Ajouter Ligne</button>
+            </div>
+            <div id="sessions14"></div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 15: PLAN LOT TRADING FOREX -->
+    <div id="page15" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-orange">&#128202;</div><span data-i18n="p15_title">PLAN LOT TRADING FOREX</span></div>
+            <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:16px;" data-i18n="p15_desc">Plan du lot a choisir selon le budget minimum d'investissement. Bareme Maxi Fond Broker : 100 000 USD.</p>
+            <div class="scroll-table">
+                <table class="ci-table" id="planLotTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="plt_col_num">N&deg;</th>
+                            <th data-i18n="plt_col_lot">LOT</th>
+                            <th data-i18n="plt_col_bareme">Bar&egrave;me Maxi Fond Broker</th>
+                            <th data-i18n="plt_col_macro">MACRO FOND A INVESTIR (USD)</th>
+                            <th data-i18n="plt_col_micro">MICRO FOND A INVESTIR (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">1</td><td>0.01</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">1 000</td><td style="color:var(--accent-orange);font-weight:600;">100</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">2</td><td>0.02</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">2 000</td><td style="color:var(--accent-orange);font-weight:600;">200</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">3</td><td>0.03</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">3 000</td><td style="color:var(--accent-orange);font-weight:600;">300</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">4</td><td>0.04</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">4 000</td><td style="color:var(--accent-orange);font-weight:600;">400</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">5</td><td>0.05</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">5 000</td><td style="color:var(--accent-orange);font-weight:600;">500</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">6</td><td>0.06</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">6 000</td><td style="color:var(--accent-orange);font-weight:600;">600</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">7</td><td>0.07</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">7 000</td><td style="color:var(--accent-orange);font-weight:600;">700</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">8</td><td>0.08</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">8 000</td><td style="color:var(--accent-orange);font-weight:600;">800</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">9</td><td>0.09</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">9 000</td><td style="color:var(--accent-orange);font-weight:600;">900</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">10</td><td>0.10</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">10 000</td><td style="color:var(--accent-orange);font-weight:600;">1 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">11</td><td>0.20</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">20 000</td><td style="color:var(--accent-orange);font-weight:600;">2 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">12</td><td>0.30</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">30 000</td><td style="color:var(--accent-orange);font-weight:600;">3 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">13</td><td>0.40</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">40 000</td><td style="color:var(--accent-orange);font-weight:600;">4 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">14</td><td>0.50</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">50 000</td><td style="color:var(--accent-orange);font-weight:600;">5 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">15</td><td>0.60</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">60 000</td><td style="color:var(--accent-orange);font-weight:600;">6 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">16</td><td>0.70</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">70 000</td><td style="color:var(--accent-orange);font-weight:600;">7 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">17</td><td>0.80</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">80 000</td><td style="color:var(--accent-orange);font-weight:600;">8 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">18</td><td>0.90</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">90 000</td><td style="color:var(--accent-orange);font-weight:600;">9 000</td></tr>
+                        <tr><td style="color:var(--accent-cyan);font-weight:700;">19</td><td>1.00</td><td>100 000</td><td style="color:var(--accent-green);font-weight:600;">100 000</td><td style="color:var(--accent-orange);font-weight:600;">10 000</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-group" style="margin-top:16px;">
+                <button class="btn-primary" onclick="downloadPlanLotPDF()" data-i18n="btn_download_plan_lot">Telecharger PDF Plan Lot</button>
+            </div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 16: TABLEAU DE BORD -->
+    <div id="page16" class="page">
+        <div class="card">
+            <div class="card-title"><div class="icon-box icon-cyan">&#128200;</div><span data-i18n="p16_title">Tableau de Bord - Performance Globale</span></div>
+            <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:16px;" data-i18n="p16_desc">Synthese de la performance des bilans de trading de toutes les pages de suivi.</p>
+            
+            <!-- Global KPIs -->
+            <div class="dashboard-grid" id="globalKPIs">
+                <div class="dash-item"><div class="d-label">Total Profit/Perte Cumule</div><div class="d-value" id="dbTotalPL" style="color:var(--accent-green);">0.00 USD</div></div>
+                <div class="dash-item"><div class="d-label">Taux Profit/Perte General</div><div class="d-value" id="dbTotalRate">0.00%</div></div>
+                <div class="dash-item"><div class="d-label">Total Capital Engage</div><div class="d-value" id="dbTotalCapital" style="color:var(--accent-cyan);">0.00 USD</div></div>
+                <div class="dash-item"><div class="d-label">Total Capital en Progression</div><div class="d-value" id="dbTotalProgression" style="color:var(--accent-green);">0.00 USD</div></div>
+                <div class="dash-item"><div class="d-label">Nombre Total Sessions</div><div class="d-value" id="dbTotalSessions" style="color:#fff;">0</div></div>
+                <div class="dash-item"><div class="d-label">Sessions Profitables</div><div class="d-value" id="dbWinSessions" style="color:var(--accent-green);">0</div></div>
+                <div class="dash-item"><div class="d-label">Sessions en Perte</div><div class="d-value" id="dbLossSessions" style="color:var(--accent-red);">0</div></div>
+                <div class="dash-item"><div class="d-label">Taux de Reussite</div><div class="d-value" id="dbWinRate" style="color:var(--accent-orange);">0%</div></div>
+                <div class="dash-item"><div class="d-label">Drawdown Moyen</div><div class="d-value" id="dbAvgDD" style="color:var(--accent-red);">0%</div></div>
+                <div class="dash-item"><div class="d-label">ROI Moyen</div><div class="d-value" id="dbAvgROI" style="color:var(--accent-green);">0%</div></div>
+            </div>
+
+            <!-- Detail per page -->
+            <h3 style="font-size:0.95rem;margin:20px 0 12px;color:var(--accent-cyan);border-bottom:1px solid var(--border);padding-bottom:8px;">Detail par Strategie</h3>
+            <div class="scroll-table">
+                <table class="ci-table" id="dbDetailTable">
+                    <thead>
+                        <tr>
+                            <th>Strategie</th>
+                            <th>Budget</th>
+                            <th>Sessions</th>
+                            <th>Cumul P/L</th>
+                            <th>Taux Moyen</th>
+                            <th>Gagnants</th>
+                            <th>Perdants</th>
+                            <th>Taux Reussite</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dbDetailBody"></tbody>
+                </table>
+            </div>
+            
+            <!-- Chart -->
+            <div class="graph-card" style="margin-top:20px;">
+                <h3>Performance Comparee par Strategie</h3>
+                <canvas id="dbChart"></canvas>
+            </div>
+
+            <div class="btn-group" style="margin-top:16px;">
+                <button class="btn-primary" onclick="downloadDashboardPDF()">Telecharger PDF Tableau de Bord</button>
+                <button class="btn-secondary" onclick="refreshDashboardGlobal()">Rafraichir</button>
+            </div>
+        </div>
+        <button class="btn-back" onclick="goHome()">&#8592; <span data-i18n="btn_back">RETOUR</span></button>
+    </div>
+
+    <!-- PAGE 8: PANEL PARAMETRAGE -->
     <div id="page8" class="page">
         <div class="card">
             <div class="card-title"><div class="icon-box icon-red">A</div><span data-i18n="p8_title">Panel Parametrage - Administrateur</span></div>
@@ -386,8 +595,6 @@
     </div>
 </div>
 
-<!-- ==================== APPLICATION SCRIPT ==================== -->
 <script src="script.js"></script>
-
 </body>
 </html>
